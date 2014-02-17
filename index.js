@@ -19,6 +19,17 @@ function RcFinder(rcName, opts) {
     return require(path);
   };
 
+  // configurable to make testing simpler
+  var syncCheck = opts._syncCheck || function (path) {
+    return fs.existsSync(path);
+  };
+  var asyncCheck = opts._syncCheck || function (path, cb) {
+    fs.stat(path, function (err, exists) {
+      if (err && err.code !== 'ENOENT') return cb(err);
+      cb(void 0, !err);
+    });
+  };
+
   this.find = function (from, cb) {
     from = from || process.cwd();
 
@@ -29,6 +40,23 @@ function RcFinder(rcName, opts) {
     var dir = from;
     var sync = (typeof cb !== 'function');
 
+    function respond(err, rcPath) {
+      if (rcPath) {
+        if (configMap[rcPath] === void 0) {
+          configMap[rcPath] = loader(rcPath);
+        }
+        rcConfig = configMap[rcPath];
+      } else {
+        rcConfig = rcPath = false;
+      }
+
+      searched.forEach(function (dir) {
+        pathMap[dir] = rcPath;
+      });
+
+      return sync ? rcConfig : cb(void 0, rcConfig);
+    }
+
     if (sync) {
       for (; !~searched.indexOf(dir); dir = path.resolve(dir, '..')) {
         if (pathMap[dir] !== void 0) {
@@ -38,51 +66,31 @@ function RcFinder(rcName, opts) {
 
         searched.push(dir);
         checkPath = path.join(dir, rcName);
-        if (fs.existsSync(checkPath)) {
+        if (syncCheck(checkPath)) {
           rcPath = checkPath;
           break;
         }
       }
 
-      if (rcPath) {
-        rcConfig = configMap[rcPath] = (configMap[rcPath] || loader(rcPath));
-        searched.forEach(function (dir) {
-          pathMap[dir] = rcPath;
-        });
-      }
-      return rcConfig;
+      return respond(void 0, rcPath);
     }
 
     // async find
-    function next(done) {
+    process.nextTick(function next() {
       if (~searched.indexOf(dir))
-        return done();
+        return respond();
 
       if (pathMap[dir] !== void 0)
-        return done(void 0, pathMap[dir]);
+        return respond(void 0, pathMap[dir]);
 
       searched.push(dir);
       checkPath = path.join(dir, rcName);
-      fs.stat(checkPath, function (err, exists) {
-        if (err && err.code !== 'ENOENT')
-          return done(err);
-
-        if (!err) return done(void 0, checkPath);
-
+      asyncCheck(checkPath, function (err, exists) {
+        if (err) return respond(err);
+        if (exists) return respond(void 0, checkPath);
+        // else keep looking
         dir = path.resolve(dir, '..');
-        next(done);
-      });
-    }
-    process.nextTick(function () {
-      next(function (err, rcPath) {
-        if (err) return cb(err);
-
-        rcConfig = configMap[rcPath] = (configMap[rcPath] || loader(rcPath));
-        searched.forEach(function (dir) {
-          configMap[dir] = rcPath;
-        });
-
-        return cb(void 0, rcConfig);
+        process.nextTick(next);
       });
     });
   };

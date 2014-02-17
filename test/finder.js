@@ -8,6 +8,7 @@ describe('RcFinder', function () {
     root: path.resolve(__dirname, 'fixtures/foo/foo/foo/foo/'),
     json: path.resolve(__dirname, 'fixtures/foo/foo/bar.json'),
     text: path.resolve(__dirname, 'fixtures/foo/foo/.baz'),
+    checkCount: 4,
     config: {
       baz: 'bog'
     }
@@ -66,6 +67,47 @@ describe('RcFinder', function () {
         expect(count).to.eql(1);
         expect(config).to.eql(fixtures.config);
         done();
+      });
+    });
+  });
+
+  it('properly caches lookups when a config file is not found', function () {
+    var count = 0;
+    var expectedCount = fixtures.checkCount;
+    var rcFinder = new RcFinder('bar.json', {
+      _syncCheck: function (path) {
+        count++;
+        return fs.existsSync(path);
+      }
+    });
+
+    expect(count).to.eql(0);
+    rcFinder.find(fixtures.root);
+    expect(count).to.eql(expectedCount);
+    rcFinder.find(fixtures.root);
+    // it should still equal previous count
+    expect(count).to.eql(expectedCount);
+  });
+
+  it('properly caches lookups when a config file is not found', function () {
+    var count = 0;
+    var expectedCount = fixtures.checkCount;
+    var rcFinder = new RcFinder('bar.json', {
+      _asyncCheck: function (path, cb) {
+        count++;
+        fs.stat(path, function (err, exists) {
+          if (err && err.code !== 'ENOENT') return cb(err);
+          cb(void 0, !err);
+        });
+      }
+    });
+
+    expect(count).to.eql(0);
+    rcFinder.find(fixtures.root, function (err, config) {
+      expect(count).to.eql(expectedCount);
+      rcFinder.find(fixtures.root, function (err, config) {
+        // it should still equal previous count
+        expect(count).to.eql(expectedCount);
       });
     });
   });
