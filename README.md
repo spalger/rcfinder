@@ -42,6 +42,6 @@ A function to call that will load a given path. Once the path for a config file 
 The default loader is:
 ```
 function loader(path) {
-  return require(path);
+  return JSON.parse(fs.readFileSync(path));
 }
 ```

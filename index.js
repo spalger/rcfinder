@@ -16,7 +16,7 @@ function RcFinder(rcName, opts) {
   var configMap = {};
 
   var loader = opts.loader || function (path) {
-    return require(path);
+    return JSON.parse(fs.readFileSync(path));
   };
 
   // configurable to make testing simpler
