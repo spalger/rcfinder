@@ -71,7 +71,7 @@ describe('RcFinder', function () {
     });
   });
 
-  it('properly caches lookups when a config file is not found', function () {
+  it('properly caches sync lookups when a config file is not found', function () {
     var count = 0;
     var expectedCount = fixtures.checkCount;
     var rcFinder = new RcFinder('bar.json', {
@@ -89,7 +89,7 @@ describe('RcFinder', function () {
     expect(count).to.eql(expectedCount);
   });
 
-  it('properly caches lookups when a config file is not found', function () {
+  it('properly caches async lookups when a config file is not found', function () {
     var count = 0;
     var expectedCount = fixtures.checkCount;
     var rcFinder = new RcFinder('bar.json', {
