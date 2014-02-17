@@ -1,7 +1,7 @@
 {
   "name": "rcfinder",
-  "version": "0.0.0",
-  "description": "Find a config file (like .foorc) by walking up from a specific directory",
+  "version": "0.0.1",
+  "description": "Find a config file (like .jshintrc) by walking up from a specific directory.",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
@@ -15,9 +15,23 @@
     "config"
   ],
   "author": "Spencer Alger",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "mocha": "~1.17.1",
     "expect.js": "~0.2.0"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "expect.js": "~0.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/spenceralger/rcfinder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/spenceralger/rcfinder/issues"
+  },
+  "homepage": "https://github.com/spenceralger/rcfinder"
 }
