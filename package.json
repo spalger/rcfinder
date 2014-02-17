@@ -23,9 +23,7 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {
-    "expect.js": "~0.2.0"
-  },
+  "dependencies": {},
   "repository": {
     "type": "git",
     "url": "git://github.com/spenceralger/rcfinder.git"
