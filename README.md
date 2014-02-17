@@ -1,5 +1,7 @@
 # rcfinder
 
+[![Travis CI](https://travis-ci.org/spenceralger/rcfinder.png)](https://travis-ci.org/spenceralger/rcfinder)
+
 Find a config file (like .jshintrc) by walking up from a specific directory.
 
 Custom logic can be implemented for loading your config files, and calls to
@@ -43,5 +45,3 @@ function loader(path) {
   return require(path);
 }
 ```
-
-## License
