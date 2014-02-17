@@ -49,8 +49,8 @@ function RcFinder(rcName, opts) {
         searched.forEach(function (dir) {
           pathMap[dir] = rcPath;
         });
-        return rcConfig;
       }
+      return rcConfig;
     }
 
     // async find
