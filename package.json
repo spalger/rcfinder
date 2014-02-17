@@ -1,0 +1,23 @@
+{
+  "name": "rcfinder",
+  "version": "0.0.0",
+  "description": "Find a config file (like .foorc) by walking up from a specific directory",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "find",
+    "rcfile",
+    "rc",
+    "search",
+    "defaults",
+    "config"
+  ],
+  "author": "Spencer Alger",
+  "license": "ISC",
+  "devDependencies": {
+    "mocha": "~1.17.1",
+    "expect.js": "~0.2.0"
+  }
+}
