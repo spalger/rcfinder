@@ -37,7 +37,7 @@ rcFinder.find(__dirname, function (err, config) {
 ## Config
 When creating an instance of the RcFinder class, you can specify options to dictate how the class behaves.
 ### config.loader
-A function to call that will load a given path. Once the path for a config file is determined, this will be called with that path as it's only argument and it should return a proper value. Any value other than undefined will be cached.
+A function to call that will load a given path. Once the path for a config file is determined, this will be called with that path as it's only argument and it should return a proper value.
 
 The default loader is:
 ```
@@ -45,3 +45,7 @@ function loader(path) {
   return JSON.parse(fs.readFileSync(path));
 }
 ```
+
+To make your loader async, simply ask for second argument which will be set to a node-style callback. You can also ask for a simple async JSON loader by setting `loader:` equal to `'async'`.
+
+NOTE:  You must call `.find()` with a callback if your loader is async.

@@ -53,9 +53,19 @@ describe('RcFinder', function () {
   it('caches config objects from async calls', function (done) {
     var count = 0;
     var rcFinder = new RcFinder('bar.json', {
-      loader: function (path) {
+      loader: function (path, cb) {
         count ++;
-        return JSON.parse(fs.readFileSync(path));
+        fs.readFile(path, function (err, file) {
+          var config;
+          if (!err) {
+            try {
+              config = JSON.parse(file);
+            } catch(e) {
+              err = cb(new Error(path + ' is not valid JSON: ' + e.message));
+            }
+          }
+          cb(err, config);
+        });
       }
     });
 
@@ -69,6 +79,16 @@ describe('RcFinder', function () {
         done();
       });
     });
+  });
+
+  it('throws an error when called without a callback by an async loader is in use', function () {
+    expect(function () {
+      var rcFinder = new RcFinder('bar.json', {
+        loader: 'async'
+      });
+
+      rcFinder.find(fixtures.root);
+    }).to.throwException();
   });
 
   it('properly caches sync lookups when a config file is not found', function () {

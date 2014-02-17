@@ -19,6 +19,22 @@ function RcFinder(rcName, opts) {
     return JSON.parse(fs.readFileSync(path));
   };
 
+  if (loader === 'async') {
+    loader = function (path, cb) {
+      fs.readFile(path, function (err, file) {
+        var config;
+        if (!err) {
+          try {
+            config = JSON.parse(file);
+          } catch(e) {
+            err = cb(new Error(path + ' is not valid JSON: ' + e.message));
+          }
+        }
+        cb(err, config);
+      });
+    };
+  }
+
   // configurable to make testing simpler
   var syncCheck = opts._syncCheck || function (path) {
     return fs.existsSync(path);
@@ -41,13 +57,28 @@ function RcFinder(rcName, opts) {
     var sync = (typeof cb !== 'function');
 
     function respond(err, rcPath) {
-      if (rcPath) {
+      if (!rcPath) {
+        // it should be safe to test for undef
+        rcConfig = rcPath = false;
+      } else {
         if (configMap[rcPath] === void 0) {
-          configMap[rcPath] = loader(rcPath);
+          // we need to populate the
+          if (loader.length === 2) {
+            if (sync) {
+              throw new TypeError('You need to call find with a callback because the loader is async');
+            }
+            // async, stop and wait then retry responding
+            return loader(rcPath, function (err, config) {
+              // force false, so we can safely check for undef
+              configMap[rcPath] = config || false;
+              respond(err, rcPath);
+            });
+          } else {
+            // sync, do what you do
+            configMap[rcPath] = loader(rcPath) || false;
+          }
         }
         rcConfig = configMap[rcPath];
-      } else {
-        rcConfig = rcPath = false;
       }
 
       searched.forEach(function (dir) {
