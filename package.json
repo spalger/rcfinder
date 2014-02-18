@@ -23,7 +23,9 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {},
+  "dependencies": {
+    "lodash.clonedeep": "~2.4.1"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/spenceralger/rcfinder.git"

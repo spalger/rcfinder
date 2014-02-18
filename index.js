@@ -5,6 +5,7 @@
 module.exports = RcFinder;
 
 var path = require('path');
+var cloneDeep = require('lodash.clonedeep');
 var fs = require('fs');
 
 function RcFinder(rcName, opts) {
@@ -62,7 +63,7 @@ function RcFinder(rcName, opts) {
         rcConfig = rcPath = false;
       } else {
         if (configMap[rcPath] === void 0) {
-          // we need to populate the
+          // we need to populate the cache
           if (loader.length === 2) {
             if (sync) {
               throw new TypeError('You need to call find with a callback because the loader is async');
@@ -78,14 +79,16 @@ function RcFinder(rcName, opts) {
             configMap[rcPath] = loader(rcPath) || false;
           }
         }
-        rcConfig = configMap[rcPath];
+        // clone the cached copy so that people can't fuck with them
+        rcConfig = cloneDeep(configMap[rcPath]);
       }
 
       searched.forEach(function (dir) {
         pathMap[dir] = rcPath;
       });
 
-      return sync ? rcConfig : cb(void 0, rcConfig);
+      if (sync) return rcConfig;
+      cb(void 0, rcConfig);
     }
 
     if (sync) {
