@@ -36,6 +36,8 @@ function RcFinder(rcName, opts) {
     };
   }
 
+  this.canLoadSync = loader.length === 1;
+
   var defaults = {};
   if (typeof opts.defaultFile === 'string') {
     defaults = opts.defaultFile;
