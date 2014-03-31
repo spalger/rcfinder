@@ -4,7 +4,7 @@
   "description": "Find a config file (like .jshintrc) by walking up from a specific directory.",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha test/*.js"
   },
   "keywords": [
     "find",

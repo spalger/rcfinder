@@ -36,15 +36,45 @@ function RcFinder(rcName, opts) {
     };
   }
 
+  var defaults = {};
+  if (typeof opts.defaultFile === 'string') {
+    defaults = opts.defaultFile;
+  }
+
   // configurable to make testing simpler
   var syncCheck = opts._syncCheck || function (path) {
     return fs.existsSync(path);
   };
-  var asyncCheck = opts._syncCheck || function (path, cb) {
+  var asyncCheck = opts._asyncCheck || function (path, cb) {
     fs.stat(path, function (err, exists) {
       if (err && err.code !== 'ENOENT') return cb(err);
       cb(void 0, !err);
     });
+  };
+
+  // expose the file loading logic (using an explicit path) to make life easier
+  var get = this.get = function get(path, cb) {
+    if (loader.length > 1 && typeof cb === 'function') {
+      // async, stop and wait then retry responding
+      return loader(path, function (err, config) {
+        // force false, so we can safely check for undef
+        cb(err, config);
+      });
+    }
+
+    if (loader.length === 1) {
+      // sync loader, return can still be done async
+      var config = loader(path) || false;
+      if (typeof cb === 'function') {
+        // async response requested, wait a tick
+        process.nextTick(function () {
+          cb(void 0, config);
+        });
+      } else {
+        // no cb, then respond sync
+        return config;
+      }
+    }
   };
 
   this.find = function (from, cb) {
@@ -57,28 +87,29 @@ function RcFinder(rcName, opts) {
     var dir = from;
     var sync = (typeof cb !== 'function');
 
+    if (sync && loader.length > 1) {
+      throw new TypeError('You need to call find with a callback because the loader is async');
+    }
+
     function respond(err, rcPath) {
       if (!rcPath) {
         // it should be safe to test for undef
         rcConfig = rcPath = false;
       } else {
+        // we need to populate the cache
         if (configMap[rcPath] === void 0) {
-          // we need to populate the cache
-          if (loader.length === 2) {
-            if (sync) {
-              throw new TypeError('You need to call find with a callback because the loader is async');
-            }
-            // async, stop and wait then retry responding
-            return loader(rcPath, function (err, config) {
-              // force false, so we can safely check for undef
-              configMap[rcPath] = config || false;
+          if (sync) {
+            configMap[rcPath] = get(rcPath);
+            // and keep going
+          } else {
+            // stop and load
+            return get(rcPath, function (err, config) {
+              configMap[rcPath] = config;
               respond(err, rcPath);
             });
-          } else {
-            // sync, do what you do
-            configMap[rcPath] = loader(rcPath) || false;
           }
         }
+
         // clone the cached copy so that people can't fuck with them
         rcConfig = cloneDeep(configMap[rcPath]);
       }
