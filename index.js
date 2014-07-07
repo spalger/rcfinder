@@ -73,7 +73,7 @@ function RcFinder(rcName, opts) {
       }
       finally {
         if (typeof cb === 'function') {
-          setImmediate(function () {
+          process.nextTick(function () {
             cb(err, config);
           });
         } else {

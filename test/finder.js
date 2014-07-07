@@ -162,7 +162,7 @@ describe('RcFinder', function () {
   it('propagates error from loader when loading asynchronously', function(done) {
     var rcFinder = new RcFinder('bar.json', {
       loader: function(path, callback) {
-        setImmediate(function() {
+        process.nextTick(function() {
           var err, body;
           try {
             body = JSON.parse('{not really json');
