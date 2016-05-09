@@ -1,6 +1,6 @@
 {
   "name": "rcfinder",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Find a config file (like .jshintrc) by walking up from a specific directory.",
   "main": "index.js",
   "scripts": {
@@ -35,6 +35,6 @@
   },
   "homepage": "https://github.com/spenceralger/rcfinder",
   "engines": {
-    "node" : ">=0.10"
+    "node": ">=0.10"
   }
 }
